@@ -1,0 +1,9 @@
+**/node_modules
+.DS_Store
+.zip
+__pycache__
+wandb
+checkpoints
+.venv
+other
+output

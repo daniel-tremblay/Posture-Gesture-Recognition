@@ -1,0 +1,42 @@
+[project]
+name = "project"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12.0"
+dependencies = [
+  "aiohttp>=3.11.14",
+  "albumentations>=2.0.5",
+  "mediapipe>=0.10.21",
+  "opencv-python>=4.11.0.86",
+  "pycocotools>=2.0.8",
+  "seaborn>=0.13.2",
+  "torch>=2.6.0",
+  "torchvision>=0.21.0",
+  "tqdm>=4.67.1",
+  "wandb>=0.19.9",
+]
+
+[tool.uv.sources]
+torch = [
+  # Default PyPI source for macOS (includes Metal support)
+  { index = "pypi", marker = "sys_platform == 'darwin'" },
+  # CUDA source for Linux
+  { index = "pytorch-cu124", marker = "sys_platform == 'linux'" }
+]
+torchvision = [
+  # Default PyPI source for macOS
+  { index = "pypi", marker = "sys_platform == 'darwin'" },
+  # CUDA source for Linux
+  { index = "pytorch-cu124", marker = "sys_platform == 'linux'" }
+]
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple/"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true

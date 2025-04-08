@@ -1,0 +1,35 @@
+{
+	"training": {
+		"epochs": 10,
+		"seed": 42
+	},
+	"data": {
+		"coco_dir": "data/coco_keypoints",
+		"batch_size": 64,
+		"num_workers": 2,
+		"max_samples": null,
+		"val_split": 0.2,
+		"grayscale_prob": 0.3,
+		"visibility_handling": "scaled",
+		"augment": true,
+		"occlusion_prob": 0.2,
+		"max_occlusions": 2,
+		"occlusion_size_range": [0.1, 0.3]
+	},
+	"optimizer": {
+		"learning_rate": 0.001,
+		"weight_decay": 1e-4
+	},
+	"loss": {
+		"w_hm": 1.5,
+		"w_off": 1.5,
+		"w_kp": 0.2,
+		"offset_loss_type": "smooth_l1",
+		"kp_loss_type": "smooth_l1"
+	},
+	"logging": {
+		"name": "blazepose-1",
+		"wandb": false,
+		"log_interval": 50
+	}
+}
