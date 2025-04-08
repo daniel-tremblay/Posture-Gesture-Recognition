@@ -6,30 +6,45 @@ This repository contains contains code for training and inference for the follow
 
 ## Installation
 
+### Prerequistes
+
+- git: [Link](https://git-scm.com/downloads) 
+- Python 3.12 [Link](https://www.python.org/downloads/release/python-31210/)
+
 ### Setup
 
-1. Clone the repository
+1. You will need to install Git and python 3.12 before proceeding
+
+
+
+2. Clone the repository using git
 	```bash
 	git clone git@github.com:puravparab/Posture-Gesture-Recognition.git
 	```
 
-2. Change directory to Posture-Gesture-Recognition
+3. Change directory to Posture-Gesture-Recognition
 	```
 	cd Posture-Gesture-Recognition
 	```
 
 3. Install [uv](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer) for python package management
-	```bash
-	curl -LsSf https://astral.sh/uv/install.sh | sh
-	```
-	or using
+
+- Windows
 	```bash
 	pip install uv
 	```
-
-4. Download python dependencies
+- Mac/Linux
+	```bash
+	curl -LsSf https://astral.sh/uv/install.sh | sh
+	```
+	
+5. Download python dependencies
 	```bash
 	uv sync
+	```
+	or if that does not work
+	```bash
+	python3 -m uv sync
 	```
 
 ## Inference
@@ -40,10 +55,18 @@ This repository contains contains code for training and inference for the follow
 	```bash
 	uv run mediapipe/pose.py --threshold 0.1
 	```
+	Alternatively
+	```bash
+	python3 -m uv run mediapipe/pose.py --threshold 0.1
+	```
 
 2. Gesture Recognition
 	```bash
 	uv run mediapipe/gesture.py --threshold 0.1
+	```
+	Alternatively
+	```bash
+	python3 -m uv run mediapipe/gesture.py --threshold 0.1
 	```
 	
 ### Blazepose
@@ -64,9 +87,13 @@ This repository contains contains code for training and inference for the follow
 
 ### Download the dataset
 
-
 1. [Coco Keypoints 2017](https://cocodataset.org/#keypoints-2017)
 
+ - Install unzip
+	```bash
+	sudo apt update
+	sudo apt install unzip
+	```
 
  - Download the train/val images and annotations
 
