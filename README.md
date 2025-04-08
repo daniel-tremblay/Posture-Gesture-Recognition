@@ -52,7 +52,7 @@ This repository contains contains code for training and inference for the follow
 	uv run blazepose/inference.py --weights weights/blazepose.pt --webcam --threshold 0
 	```
 
-2. Run this command and specify path to weights, path to input image and threshold
+2. Run this command if using a single image
 	```bash
 	uv run blazepose/inference.py --weights weights/blazepose.pt --input <path/to/input/image> --threshold 0
 	```
