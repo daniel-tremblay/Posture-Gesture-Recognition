@@ -1,8 +1,22 @@
 # Posture and Gesture Recognition
+This repository contains contains code for inference and training for the following:
+- Model for [Hand Gesture Recognition](#hand-gesture-recognition)
+- Model for [Pose Estimation](#blazepose-pose-estimation)
+- [Mediapipe API](#mediapipe-api) for pose estimation and gesture recognition
 
-This repository contains contains code for training and inference for the following:
-- Blazepose for pose estimation
-- Mediapipe for pose estimation and gesture recognition
+## Table of Contents
+- [Installation](#installation)
+  - [Prerequistes](#prerequistes)
+  - [Setup](#setup)
+- [Inference](#inference)
+  - [Mediapipe (API)](#mediapipe-api)
+  - [Hand Gesture Recognition](#hand-gesture-recognition)
+  - [Blazepose (Pose Estimation)](#blazepose-pose-estimation)
+- [Training](#training)
+  - [Download the dataset](#download-the-dataset)
+  - [BlazePose](#blazepose)
+
+
 
 ## Installation
 
@@ -18,6 +32,12 @@ This repository contains contains code for training and inference for the follow
 
 
 2. Clone the repository using git
+
+	Windows
+	```bash
+	git clone https://github.com/puravparab/Posture-Gesture-Recognition.git
+	```
+	MacOS/Linux
 	```bash
 	git clone git@github.com:puravparab/Posture-Gesture-Recognition.git
 	```
@@ -29,13 +49,8 @@ This repository contains contains code for training and inference for the follow
 
 3. Install [uv](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer) for python package management
 
-- Windows
 	```bash
 	pip install uv
-	```
-- Mac/Linux
-	```bash
-	curl -LsSf https://astral.sh/uv/install.sh | sh
 	```
 	
 5. Download python dependencies
@@ -49,9 +64,9 @@ This repository contains contains code for training and inference for the follow
 
 ## Inference
 
-### Mediapipe
+### Mediapipe (API)
 
-1. Pose estimation
+1. Pose Estimation
 	```bash
 	uv run mediapipe/pose.py --threshold 0.1
 	```
@@ -60,7 +75,7 @@ This repository contains contains code for training and inference for the follow
 	python3 -m uv run mediapipe/pose.py --threshold 0.1
 	```
 
-2. Gesture Recognition
+2. Hand Gesture Recognition
 	```bash
 	uv run mediapipe/gesture.py --threshold 0.1
 	```
@@ -68,14 +83,22 @@ This repository contains contains code for training and inference for the follow
 	```bash
 	python3 -m uv run mediapipe/gesture.py --threshold 0.1
 	```
-	
-### Blazepose
-1. Run this command to start the webcam
+
+### Hand Gesture Recognition
+
+
+1. Use with webcam
+	```bash
+	uv run hgr/inference.py --weights weights/landmark.pth --webcam
+	```
+
+### Blazepose (Pose Estimation)
+1. Use with Webcam
 	```bash
 	uv run blazepose/inference.py --weights weights/blazepose.pt --webcam --threshold 0
 	```
 
-2. Run this command if using a single image
+2. Use on single image
 	```bash
 	uv run blazepose/inference.py --weights weights/blazepose.pt --input <path/to/input/image> --threshold 0
 	```
