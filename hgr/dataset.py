@@ -143,7 +143,6 @@ class HagridDataset(Dataset):
 		self,
 		root,
 		split="train",
-		task="landmarks",
 		output_size=256,
 		augment=False,
 		flip_prob=0.5,
@@ -159,7 +158,6 @@ class HagridDataset(Dataset):
 		Args:
 			root (str): Root directory of the dataset.
 			split (str): One of {"train", "val", "test"}.
-			task (str): Primary task ('landmarks' or 'classification'), can influence augmentations.
 			output_size (int): Target size for cropped image (default 256).
 			augment (bool): Apply data augmentation (default False).
 			flip_prob (float): Probability of horizontal flip.
@@ -173,7 +171,6 @@ class HagridDataset(Dataset):
 		"""
 		self.root = root
 		self.split = split
-		self.task = task
 		self.output_size = output_size
 		self.augment = augment
 		self.blur_prob = blur_prob
@@ -577,7 +574,7 @@ if __name__ == "__main__":
 					titles = {
 						'title': f"Ann ID: {ann_id}, Index: {sample_idx}",
 						'original': f"Original Image\n({w_orig}x{h_orig})",
-						'cropped': f"Cropped Image\nGesture: {gesture_name} (Idx: {label_idx})\n({w_crop}x{h_crop})"
+						'cropped': f"Cropped Image\nGesture: {gesture_name} (Idx: {label_idx})\n({w_crop}x{h_crop}) Padding: {args.crop_padding_factor}"
 					}
 
 					plot_hand_data(

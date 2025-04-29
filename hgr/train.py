@@ -5,12 +5,13 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 from datetime import datetime
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim import AdamW
 from torch.utils.data import DataLoader, ConcatDataset
 from torch.optim.lr_scheduler import ReduceLROnPlateau, CosineAnnealingLR
-from torch.optim import AdamW
 
 from landmark import MediapipeHandsLandmarks, MODEL_CONFIG
 from dataset import HagridDataset, collate_filter_none
@@ -194,7 +195,7 @@ def main(args):
 		model, test_loader, device, loss_fn, scale_factor, pck_threshold
 	)
 
-	print("--- Final Test Set Results ---")
+	print("--- Test Set Results ---")
 	print(f"SmoothL1 Loss: {final_test_loss:.4f}")
 	print(f"Average Distance: {final_test_avg_dist:.2f} pixels")
 	print(f"PCK@{pck_threshold}px: {final_test_pck:.4f}")
@@ -216,10 +217,7 @@ if __name__ == "__main__":
 	default_project = f"project_{timestamp}"
 	default_run = f"run_{timestamp}"
 
-	# Data & Paths
 	parser.add_argument("--data_dir", type=str, default="data/hagrid_small", help="Root directory of the dataset")
-	
-	# Training Hyperparameters
 	parser.add_argument("--lr", type=float, default=2e-3, help="Learning rate")
 	parser.add_argument("--batch_size", type=int, default=16, help="Batch size")
 	parser.add_argument("--epochs", type=int, default=10, help="Number of training epochs")

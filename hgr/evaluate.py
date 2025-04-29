@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 import torch.nn as nn
+import torchmetrics
 from typing import Tuple, List, Dict
 from torch.utils.data import DataLoader
 
@@ -255,6 +256,52 @@ def evaluate_model_with_error_tracking(
 	sample_errors.sort(key=lambda item: item[1], reverse=True)
 
 	return avg_loss, overall_avg_distance.item(), overall_pck, all_preds, all_targets, sample_errors
+
+def evaluate_classifier(
+	model, 
+	dataloader, 
+	criterion, 
+	device, 
+	num_classes, 
+	prefix="val"
+):
+	"""Evaluates the gesture classification model on a given dataset split."""
+	model.eval()
+	total_loss = 0.0
+
+	accuracy_metric = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes).to(device)
+	f1_metric = torchmetrics.F1Score(task="multiclass", num_classes=num_classes, average='macro').to(device)
+
+	with torch.no_grad():
+		for batch in tqdm(dataloader, desc=f"Evaluation ({prefix})", leave=False):
+			if batch is None or len(batch) != 3 or batch[0] is None or batch[2] is None:
+				print(f"Warning: Skipping invalid batch during {prefix} evaluation.")
+				continue
+
+			images, _, labels = batch
+			images = images.to(device)
+			labels = labels.to(device)
+
+			outputs = model(images)
+			loss = criterion(outputs, labels)
+			total_loss += loss.item() * images.size(0)
+
+			accuracy_metric.update(outputs, labels)
+			f1_metric.update(outputs, labels)
+
+	dataset_len = len(dataloader.dataset)
+	if dataset_len == 0:
+		print(f"Warning: No samples processed during {prefix} evaluation.")
+		return 0.0, 0.0, 0.0
+
+	# Compute final metrics
+	avg_loss = total_loss / dataset_len
+	accuracy = accuracy_metric.compute().item()
+	f1_score = f1_metric.compute().item()
+	accuracy_metric.reset()
+	f1_metric.reset()
+
+	return avg_loss, accuracy, f1_score
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Evaluate MediaPipe Hands Landmark Model")

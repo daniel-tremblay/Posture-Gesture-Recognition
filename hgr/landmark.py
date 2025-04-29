@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
-from torch_utils import get_activation, get_device, optimize_for_device
 from torch.utils.data import DataLoader
 
 from dataset import HagridDataset, collate_filter_none
+from torch_utils import get_activation, get_device, optimize_for_device
 
 MODEL_CONFIG = {
 	"activation": "SiLU",

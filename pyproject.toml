@@ -7,11 +7,13 @@ requires-python = ">=3.12.0"
 dependencies = [
   "aiohttp>=3.11.14",
   "albumentations>=2.0.5",
+  "certifi>=2025.1.31",
   "mediapipe>=0.10.21",
   "opencv-python>=4.11.0.86",
   "pycocotools>=2.0.8",
   "seaborn>=0.13.2",
   "torch>=2.6.0",
+  "torchmetrics>=1.7.1",
   "torchvision>=0.21.0",
   "tqdm>=4.67.1",
   "wandb>=0.19.9",
