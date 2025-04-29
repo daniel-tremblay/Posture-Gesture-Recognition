@@ -30,7 +30,7 @@ def draw_landmarks_on_image(
 	draw_connections=False,
 	connections=None,
 	pred_color=(0, 0, 255),
-	gt_color=(0, 255, 0),
+	gt_color=(0, 255, 0), 
 	connection_color=(255, 255, 255),
 	size=2,
 	connection_thickness=3
@@ -75,7 +75,8 @@ def run_webcam_inference(
 	model, 
 	device, 
 	output_size, 
-	show_labels
+	show_labels,
+	crop_padding_factor=1.0
 ):
 	"""Run inference on live webcam feed
 		- Mediapipe hands for hand detection
@@ -84,7 +85,7 @@ def run_webcam_inference(
 	mp_hands = mp.solutions.hands
 	hands = mp_hands.Hands(
 		static_image_mode=False,
-		max_num_hands=2, # Allow multiple hands
+		max_num_hands=2,
 		min_detection_confidence=0.7,
 		min_tracking_confidence=0.5
 	)
@@ -128,16 +129,15 @@ def run_webcam_inference(
 				x_min, x_max = min(x_coords), max(x_coords)
 				y_min, y_max = min(y_coords), max(y_coords)
 
-				padding = 30
-				x_min = max(0, x_min - padding)
-				y_min = max(0, y_min - padding)
-				x_max = min(frame_width, x_max + padding)
-				y_max = min(frame_height, y_max + padding)
-
 				bbox_abs = [int(x_min), int(y_min), int(x_max), int(y_max)]
 
 				# Crop Hand
-				crop_img, crop_coords, scales = crop_hand(frame_rgb, bbox_abs, output_size=output_size)
+				crop_img, crop_coords, scales = crop_hand(
+					frame_rgb, 
+					bbox_abs, 
+					output_size=output_size, 
+					padding_factor=crop_padding_factor
+				)
 				if crop_img is None: 
 					continue
 				crop_img_tensor = torch.from_numpy(crop_img).permute(2, 0, 1).float() / 255.0
@@ -207,7 +207,7 @@ def run_dataset_inference(
 			print(f"Error: Failed to load sample at index {args.index}. It might be problematic or skipped.")
 			return
 			
-		crop_img_tensor, landmarks_gt_norm, _, crop_coords, scales = result
+		crop_img_tensor, landmarks_gt_norm, _ = result
 		vis_crop_tensor = crop_img_tensor.clone()
 		crop_img_tensor = crop_img_tensor.unsqueeze(0).to(device)
 
@@ -269,7 +269,13 @@ def inference(args):
 
 	# --- Mode Selection ---
 	if args.webcam:
-		run_webcam_inference(model, device, output_size, args.labels)
+		run_webcam_inference(
+			model, 
+			device, 
+			output_size, 
+			args.labels, 
+			crop_padding_factor=args.crop_padding_factor
+		)
 	else:
 		run_dataset_inference(model, device, output_size, args)
 
@@ -282,7 +288,6 @@ if __name__ == "__main__":
 		required=True,
 		help="Path to the trained model checkpoint (.pth file)"
 	)
-
 	mode_group = parser.add_mutually_exclusive_group(required=False)
 	mode_group.add_argument(
 		"--webcam",
@@ -311,6 +316,13 @@ if __name__ == "__main__":
 		"--labels",
 		action="store_true",
 		help="Show landmark index labels on the output visualization."
+	)
+
+	parser.add_argument(
+		"--crop_padding_factor",
+		type=float,
+		default=1.0,
+		help="Padding factor applied to the bounding box before cropping (used in webcam mode)."
 	)
 
 	args = parser.parse_args()

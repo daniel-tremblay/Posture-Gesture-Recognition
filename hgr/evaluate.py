@@ -215,7 +215,7 @@ def evaluate_model_with_error_tracking(
 				current_index += batch_size
 				continue
 
-			images, landmarks_gt = batch
+			images, landmarks_gt, _ = batch
 			batch_size = images.size(0)
 			images = images.to(device)
 			landmarks_gt = landmarks_gt.to(device)

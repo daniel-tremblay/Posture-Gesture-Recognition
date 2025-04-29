@@ -6,8 +6,8 @@ from torch.utils.data import DataLoader
 from dataset import HagridDataset, collate_filter_none
 
 MODEL_CONFIG = {
-	"activation": "ReLU",
-	"dropout": 0.2,
+	"activation": "SiLU",
+	"dropout": 0.1,
 	"num_landmarks": 21,
 }
 
@@ -19,7 +19,7 @@ class ConvBlock(nn.Module):
 		out_channels: int,
 		kernel_size: int = 3,
 		stride: int = 1,
-		activation: str = 'ReLU'
+		activation: str = 'SiLU'
 	):
 		super().__init__()
 		self.conv = nn.Conv2d(
@@ -45,7 +45,7 @@ class ResidualBlock(nn.Module):
 		in_channels: int,
 		out_channels: int,
 		stride: int = 1,
-		activation: str = 'ReLU'
+		activation: str = 'SiLU'
 	):
 		super().__init__()
 		self.stride = stride

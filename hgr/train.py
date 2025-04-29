@@ -220,10 +220,10 @@ if __name__ == "__main__":
 	parser.add_argument("--data_dir", type=str, default="data/hagrid_small", help="Root directory of the dataset")
 	
 	# Training Hyperparameters
-	parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
-	parser.add_argument("--batch_size", type=int, default=64, help="Batch size")
+	parser.add_argument("--lr", type=float, default=2e-3, help="Learning rate")
+	parser.add_argument("--batch_size", type=int, default=16, help="Batch size")
 	parser.add_argument("--epochs", type=int, default=10, help="Number of training epochs")
-	parser.add_argument("--num_workers", type=int, default=4, help="Number of data loading workers")
+	parser.add_argument("--num_workers", type=int, default=2, help="Number of data loading workers")
 	parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
 	parser.add_argument("--augment", action='store_true', help="Enable data augmentation for the training set")
 	parser.add_argument("--clip_grad_norm", type=float, default=5.0, help="Max norm for gradient clipping (0 to disable)")

@@ -12,9 +12,9 @@ This repository contains contains code for inference and training for the follow
   - [Mediapipe (API)](#mediapipe-api)
   - [Hand Gesture Recognition](#hand-gesture-recognition)
   - [Blazepose (Pose Estimation)](#blazepose-pose-estimation)
-- [Training](#training)
+<!-- - [Training](#training)
   - [Download the dataset](#download-the-dataset)
-  - [BlazePose](#blazepose)
+  - [BlazePose](#blazepose) -->
 
 
 
@@ -64,6 +64,13 @@ This repository contains contains code for inference and training for the follow
 
 ## Inference
 
+### Hand Gesture Recognition
+
+1. Use with webcam
+	```bash
+	uv run hgr/inference.py --weights weights/landmark.pth --webcam
+	```
+
 ### Mediapipe (API)
 
 1. Pose Estimation
@@ -84,14 +91,6 @@ This repository contains contains code for inference and training for the follow
 	python3 -m uv run mediapipe/gesture.py --threshold 0.1
 	```
 
-### Hand Gesture Recognition
-
-
-1. Use with webcam
-	```bash
-	uv run hgr/inference.py --weights weights/landmark.pth --webcam
-	```
-
 ### Blazepose (Pose Estimation)
 1. Use with Webcam
 	```bash
@@ -106,9 +105,9 @@ This repository contains contains code for inference and training for the follow
 	The output images with keypoints should be present in [output](./output/) directory
 
 
-## Training
+<!-- ## Training -->
 
-### Download the dataset
+<!-- ### Download the dataset
 
 1. [Coco Keypoints 2017](https://cocodataset.org/#keypoints-2017)
 
@@ -141,4 +140,4 @@ This repository contains contains code for inference and training for the follow
 	Run or see [utils](/papers/blaze-pose/utils.py) for info about argument flags
 	```bash
 	uv run papers/blaze-pose/train.py --help
-	```
+	``` -->
