@@ -29,8 +29,6 @@ This repository contains contains code for inference and training for the follow
 
 1. You will need to install Git and python 3.12 before proceeding
 
-
-
 2. Clone the repository using git
 
 	Windows
@@ -84,11 +82,11 @@ This repository contains contains code for inference and training for the follow
 
 2. Hand Gesture Recognition
 	```bash
-	uv run mediapipe/gesture.py --threshold 0.1
+	uv run mediapipe/gesture.py
 	```
 	Alternatively
 	```bash
-	python3 -m uv run mediapipe/gesture.py --threshold 0.1
+	python3 -m uv run mediapipe/gesture.py
 	```
 
 ### Blazepose (Pose Estimation)

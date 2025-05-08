@@ -20,7 +20,7 @@ MODEL_ASSET_PATH = 'mediapipe/gesture_recognizer.task'
 
 latest_result = None
 lock = threading.Lock()
-# --- Result Callback ---
+
 def save_result_callback(
 	result: vision.GestureRecognizerResult,
 	output_image: mp.Image,
@@ -40,9 +40,13 @@ def draw_landmarks_styled(
 	landmarks,
 	landmark_color,
 	connections,
+	gestures,
+	text_color,
+	font_scale_info,
+	text_thickness,
 	visibility_threshold=0.5
 ):
-	"""Draws landmarks"""
+	"""Draws landmarks, connections, bounding box, and gesture label."""
 	h, w, _ = image.shape
 	if not landmarks:
 		return
@@ -59,13 +63,48 @@ def draw_landmarks_styled(
 			end_pt = (int(end_lm.x * w), int(end_lm.y * h))
 			cv2.line(image, start_pt, end_pt, connection_color, thickness=6, lineType=cv2.LINE_AA)
 
-
 	# --- Draw Landmarks ---
 	for idx, lm in enumerate(landmarks):
 		center = (int(lm.x * w), int(lm.y * h))
 		color = landmark_color
 		cv2.circle(image, center, radius=8, color=color, thickness=-1, lineType=cv2.LINE_AA)
 		cv2.circle(image, center, radius=10, color=color, thickness=2, lineType=cv2.LINE_AA)
+
+	# --- Draw Bounding Box with Gesture Label ---
+	min_x, min_y = w, h
+	max_x, max_y = 0, 0
+	for lm in landmarks:
+		x_coord, y_coord = int(lm.x * w), int(lm.y * h)
+		min_x = min(min_x, x_coord)
+		max_x = max(max_x, x_coord)
+		min_y = min(min_y, y_coord)
+		max_y = max(max_y, y_coord)
+
+	padding = 15
+	box_color = (255, 255, 255)
+	cv2.rectangle(
+		image, 
+		(min_x - padding, min_y - padding),
+		(max_x + padding, max_y + padding), 
+		box_color, 2
+	)
+
+	if gestures:
+		top_gesture = gestures[0]
+		gesture_name = top_gesture.category_name
+		text_color_gesture_label = text_color
+		(text_w, text_h), baseline = cv2.getTextSize(
+			gesture_name, cv2.FONT_HERSHEY_SIMPLEX, font_scale_info, text_thickness
+		)
+		text_x = min_x - padding
+		text_y = min_y - padding - baseline - 5
+		cv2.rectangle(
+			image, (text_x, text_y - text_h - 5), 
+			(text_x + text_w, text_y + baseline), (70,70,70), -1)
+		cv2.putText(
+			image, gesture_name, (text_x, text_y),
+			cv2.FONT_HERSHEY_SIMPLEX, font_scale_info, text_color_gesture_label, text_thickness
+		)
 
 
 # --- Webcam Processing ---
@@ -81,7 +120,6 @@ def process_webcam(
 	if not cap.isOpened():
 		raise RuntimeError("Could not open webcam")
 
-	# --- Create Gesture Recognizer ---
 	try:
 		base_options = python.BaseOptions(model_asset_path=MODEL_ASSET_PATH)
 		options = vision.GestureRecognizerOptions(
@@ -94,10 +132,9 @@ def process_webcam(
 			result_callback=save_result_callback)
 		recognizer = vision.GestureRecognizer.create_from_options(options)
 		print("Gesture Recognizer created successfully.")
+
 	except Exception as e:
 		print(f"Error creating Gesture Recognizer: {e}")
-		print("\nEnsure the model file 'gesture_recognizer.task' is accessible.")
-		print("It might need to be downloaded by MediaPipe or placed manually.")
 		return
 
 	cv2.namedWindow('MediaPipe Gesture Recognition', cv2.WINDOW_NORMAL)
@@ -110,39 +147,40 @@ def process_webcam(
 			continue
 
 		frame_count += 1
+
 		# Flip the image horizontally
 		frame = cv2.flip(frame, 1)
 		rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 		mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
 
-		# Get current time for async call
-		timestamp_ms = int(time.time() * 1000)
+		timestamp_ms = int(time.time() * 1000) # Get current time for async call
 		recognizer.recognize_async(mp_image, timestamp_ms)
 
 		# --- Process and Draw Results ---
 		display_frame = frame.copy()
+		overlay = frame.copy()
+
 		current_result = None
 		with lock:
 			if latest_result:
 				current_result = latest_result
 
-		# --- Create base frame and overlay --- 
-		overlay = frame.copy()
-
 		if current_result:
 			h, w, _ = display_frame.shape
-			alpha = 0.7
-
-			# Draw "Press 'q' to quit"
 			quit_text_x = 10
 			quit_text_y = 25
-			font_scale_quit = 0.8
-			text_thickness_quit = 2
+			font_scale_quit = 1
+			text_thickness_quit = 3
 			text_color_quit = (255, 255, 255)
 			cv2.putText(
 				overlay, "Press 'q' to quit", (quit_text_x, quit_text_y),
 				cv2.FONT_HERSHEY_SIMPLEX, font_scale_quit, text_color_quit, text_thickness_quit
 			)
+
+			# Text properties for gesture labels and info panel
+			font_scale_info = 0.8
+			text_thickness = 2
+			text_color = (255, 255, 255) # White
 
 			# Iterate through detected hands
 			for i in range(len(current_result.hand_landmarks)):
@@ -155,71 +193,16 @@ def process_webcam(
 					overlay,
 					landmarks,
 					single_landmark_color,
-					mp.solutions.hands.HAND_CONNECTIONS
+					mp.solutions.hands.HAND_CONNECTIONS,
+					gestures,
+					text_color,
+					font_scale_info,
+					text_thickness
 				)
 
-				# --- Prepare Info Panel---
-				panel_width = 300
-				text_line_height = 30
-				num_lines_display = 3 # Handedness, Gesture, Score
-				panel_height = text_line_height * num_lines_display + 20
-
-				# Determine panel position based on handedness
-				is_left = handedness.category_name == 'Left'
-				rect_x = w - panel_width - 10 if is_left else 10
-				rect_y = quit_text_y + text_line_height
-
-				# Draw panel
-				cv2.rectangle(
-					overlay, (rect_x, rect_y),
-					(rect_x + panel_width, rect_y + panel_height),
-					(70, 70, 70), -1
-				)
-
-				# Prepare text content
-				y_offset = rect_y + 20
-				text_x_start = rect_x + 15
-				font_scale_info = 0.8
-				text_thickness = 2
-				text_color = (255, 255, 255)
-				low_conf_color = (200, 200, 200)
-
-				# Display Handedness - Flipping the name for display
-				display_handedness = 'Right' if handedness.category_name == 'Left' else 'Left'
-				hand_text = f"Hand: {display_handedness} ({handedness.score:.2f})"
-				cv2.putText(
-					overlay, hand_text, (text_x_start, y_offset),
-					cv2.FONT_HERSHEY_SIMPLEX, font_scale_info, text_color, text_thickness
-				)
-				y_offset += text_line_height
-
-				# Display Top Gesture
-				if gestures:
-					top_gesture = gestures[0]
-					gesture_text = f"Gesture: {top_gesture.category_name}"
-					gesture_color = text_color if top_gesture.score >= min_gesture_confidence else low_conf_color
-					cv2.putText(
-						overlay, gesture_text, (text_x_start, y_offset),
-						cv2.FONT_HERSHEY_SIMPLEX, font_scale_info, gesture_color, text_thickness
-					)
-					y_offset += text_line_height
-
-					score_text = f"Confidence: {top_gesture.score:.2f}"
-					cv2.putText(
-						overlay, score_text, (text_x_start, y_offset),
-						cv2.FONT_HERSHEY_SIMPLEX, font_scale_info, gesture_color, text_thickness
-					)
-
-				else:
-					cv2.putText(
-						overlay, "Gesture: None", (text_x_start, y_offset),
-						cv2.FONT_HERSHEY_SIMPLEX, font_scale_info, text_color, text_thickness
-					)
-
-			display_frame = cv2.addWeighted(overlay, alpha, display_frame, 1 - alpha, 0)
+			display_frame = overlay
 
 		else:
-			# Display 'No hands detected' if result is None or empty
 			cv2.putText(
 				display_frame, "No hands detected", (10, 60),
 				cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2
