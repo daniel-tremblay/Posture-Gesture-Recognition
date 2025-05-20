@@ -152,7 +152,9 @@ class HagridDataset(Dataset):
 		vflip_prob=0.0,
 		rotate_prob=0.1,
 		blur_prob=0.0,
-		crop_padding_factor=1.0
+		crop_padding_factor=1.0,
+		ignore_classes=None,
+		rotate_limit=5
 	):
 		"""
 		Args:
@@ -168,6 +170,7 @@ class HagridDataset(Dataset):
 			rotate_prob (float): Probability of rotation.
 			blur_prob (float): Probability of Gaussian blur.
 			crop_padding_factor (float): Factor to pad bbox for cropping.
+			ignore_classes (list[str], optional): List of gesture names to ignore. Defaults to None.
 		"""
 		self.root = root
 		self.split = split
@@ -175,6 +178,7 @@ class HagridDataset(Dataset):
 		self.augment = augment
 		self.blur_prob = blur_prob
 		self.crop_padding_factor = crop_padding_factor
+		self.ignore_classes = set(ignore_classes) if ignore_classes else set()
 
 		self.annotations_dir = os.path.join(root, "annotations", split)
 		self.images_dir = os.path.join(root, "images")
@@ -190,7 +194,7 @@ class HagridDataset(Dataset):
 				A.RandomBrightnessContrast(p=brightness_contrast_prob),
 				A.ColorJitter(p=color_jitter_prob),
 				A.ToGray(p=grayscale_prob),
-				A.Rotate(limit=(-5, 5), p=rotate_prob, border_mode=cv2.BORDER_CONSTANT),
+				A.Rotate(limit=(-rotate_limit, rotate_limit), p=rotate_prob, border_mode=cv2.BORDER_CONSTANT),
 				A.GaussianBlur(p=self.blur_prob),
 			], keypoint_params=keypoint_params)
 
@@ -200,12 +204,21 @@ class HagridDataset(Dataset):
 		self.num_classes = 0
 		all_gestures = set()
 		json_labels = glob(os.path.join(self.annotations_dir, "*.json"))
+		
+		ignored_gestures_found = set()
+
 		if not json_labels:
 			print(f"Warning: No JSON files found in {self.annotations_dir}. Cannot create label map.")
 		else:
 			for file in json_labels:
 				gesture_name = os.path.splitext(os.path.basename(file))[0]
+				if gesture_name in self.ignore_classes:
+					ignored_gestures_found.add(gesture_name)
+					continue
 				all_gestures.add(gesture_name)
+			
+			if self.ignore_classes:
+				print(f"Ignoring {len(ignored_gestures_found)} gestures specified in ignore_classes: {', '.join(sorted(list(ignored_gestures_found)))}")
 
 			sorted_gestures = sorted(list(all_gestures))
 			self.label_to_index = {name: i for i, name in enumerate(sorted_gestures)}
@@ -221,6 +234,10 @@ class HagridDataset(Dataset):
 
 		for file in json_files:
 			gesture = os.path.splitext(os.path.basename(file))[0]
+			
+			if gesture in self.ignore_classes:
+				continue
+
 			try:
 				with open(file, "r") as f:
 					data = json.load(f)
