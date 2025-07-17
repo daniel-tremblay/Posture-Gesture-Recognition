@@ -249,7 +249,7 @@ def process_webcam(
 
 		if cv2.waitKey(5) & 0xFF == ord('s'):
    			if current_result:
-       				save_landmark_sample(current_result.hand_landmarks, label)
+				save_landmark_sample(current_result.hand_landmarks, label)
 				print(f"Saved sample for gesture {label}")
 	    
 		# Break loop on 'q' press
