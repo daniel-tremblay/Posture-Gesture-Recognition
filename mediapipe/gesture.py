@@ -251,7 +251,6 @@ def main():
 		min_detection_confidence=args.min_detection_confidence,
 		min_tracking_confidence=args.min_tracking_confidence,
 		min_gesture_confidence=args.threshold
-		label=args.label
 	)
 
 if __name__ == '__main__':
