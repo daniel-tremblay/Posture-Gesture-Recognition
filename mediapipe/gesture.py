@@ -8,6 +8,41 @@ import matplotlib.pyplot as plt
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
+SAVE_DIR = "gesture_data"
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+def save_landmark_sample(landmarks, label):
+    """
+    Save the hand landmarks as a CSV row with the given label.
+    """
+    if not landmarks:
+        print("No landmarks to save.")
+        return
+
+    # Use only first hand (or modify for multi-hand later)
+    hand = landmarks[0]
+
+    # Flatten all (x, y, z) coordinates into one row
+    row = [label]
+    for lm in hand:
+        row.extend([lm.x, lm.y, lm.z])  # Normalized coordinates
+
+    # Define CSV path
+    csv_path = os.path.join(SAVE_DIR, "landmarks.csv")
+
+    # Write header if file doesn't exist
+    file_exists = os.path.isfile(csv_path)
+    with open(csv_path, mode='a', newline='') as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            header = ["label"]
+            for i in range(len(hand)):
+                header.extend([f"x{i}", f"y{i}", f"z{i}"])
+            writer.writerow(header)
+        writer.writerow(row)
+
+    print(f"Saved gesture sample for label '{label}' ✅")
+	
 HAND_LANDMARK_NAMES = [
 	'wrist', 'thumb_cmc', 'thumb_mcp', 'thumb_ip', 'thumb_tip', 'index_finger_mcp',
 	'index_finger_pip', 'index_finger_dip', 'index_finger_tip', 'middle_finger_mcp',
@@ -113,6 +148,7 @@ def process_webcam(
 	min_detection_confidence: float = 0.5,
 	min_tracking_confidence: float = 0.5,
 	min_gesture_confidence: float = 0.5
+	label: str = "custom_gesture"
 ):
 	"""Processes webcam feed for gesture recognition."""
 	global latest_result
@@ -211,6 +247,11 @@ def process_webcam(
 		# Display the frame
 		cv2.imshow('MediaPipe Gesture Recognition', display_frame)
 
+		if cv2.waitKey(5) & 0xFF == ord('s'):
+   			if current_result:
+       				save_landmark_sample(current_result.hand_landmarks, label)
+				print(f"Saved sample for gesture {label}")
+	    
 		# Break loop on 'q' press
 		if cv2.waitKey(5) & 0xFF == ord('q'):
 			break
@@ -240,6 +281,12 @@ def main():
 		'--threshold', type=float, default=0.5,
 		help='Minimum confidence threshold for displaying recognized gestures.'
 	)
+
+	parser.add_argument(
+    		'--label', type=str, default='custom_gesture',
+    		help='Label for saving gesture samples.'
+	)
+
 	args = parser.parse_args()
 
 	print("Starting webcam gesture recognition...")
@@ -250,6 +297,7 @@ def main():
 		min_detection_confidence=args.min_detection_confidence,
 		min_tracking_confidence=args.min_tracking_confidence,
 		min_gesture_confidence=args.threshold
+		label=args.label
 	)
 
 if __name__ == '__main__':
