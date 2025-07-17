@@ -147,7 +147,7 @@ def process_webcam(
 	num_hands: int = 2,
 	min_detection_confidence: float = 0.5,
 	min_tracking_confidence: float = 0.5,
-	min_gesture_confidence: float = 0.5
+	min_gesture_confidence: float = 0.5,
 	label: str = "custom_gesture"
 ):
 	"""Processes webcam feed for gesture recognition."""
